@@ -6,8 +6,13 @@
  */
 
 #include <iostream>
+#include "turba_bot.hpp"
 
 int main() {
-    std::cout << "Hello\n";
+    std::string token = getenv("TOKEN");
+    std::cout << "Token: " << token << std::endl;
+    turba_bot turbaBot(token);
+
+
     return 0;
 }
