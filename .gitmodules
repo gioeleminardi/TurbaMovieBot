@@ -1,3 +1,6 @@
 [submodule "deps/tgbot-cpp"]
 	path = deps/tgbot-cpp
 	url = git@github.com:reo7sp/tgbot-cpp.git
+[submodule "deps/SQLiteCpp"]
+	path = deps/SQLiteCpp
+	url = git@github.com:SRombauts/SQLiteCpp.git
