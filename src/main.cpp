@@ -10,8 +10,12 @@
 int main() {
     std::string token = getenv("TOKEN");
     std::cout << "Token: " << token << std::endl;
+
     turba_bot turbaBot(token);
 
+    turbaBot.init();
+
+    turbaBot.run();
 
     return 0;
 }
