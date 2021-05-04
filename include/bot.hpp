@@ -6,15 +6,17 @@
 #ifndef TURBAMOVIEBOT_BOT_HPP
 #define TURBAMOVIEBOT_BOT_HPP
 
-#include <string>
 #include <tgbot/tgbot.h>
-#include "commands.hpp"
-#include <map>
-#include <icommander.hpp>
 
-class bot : public icommander {
+#include <icontroller.hpp>
+#include <map>
+#include <string>
+
+#include "commands.hpp"
+
+class bot {
 public:
-    explicit bot(const std::string &token);
+    explicit bot(const std::string& token);
 
     ~bot();
 
@@ -23,21 +25,13 @@ public:
     void run();
 
 private:
-    void parse_cmd(const TgBot::Message::Ptr &msg);
-
-    void add_movie(std::string title, std::string resource_url) override;
-
-    void delete_movie(std::string title) override;
-
-    std::string extract_movie() override;
-
-    void my_movies() override;
-
-    void all_movies() override;
+    void load_commands();
 
 private:
     TgBot::Bot _bot;
     TgBot::TgLongPoll _long_poll;
+    std::vector<turba_bot::command> _commands;
+    icontroller::Ptr _controller;
 };
 
-#endif //TURBAMOVIEBOT_BOT_HPP
+#endif  // TURBAMOVIEBOT_BOT_HPP

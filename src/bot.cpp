@@ -5,77 +5,51 @@
  */
 #include "bot.hpp"
 
-bot::bot(const std::string &token) : _bot{token}, _long_poll{_bot} {
-}
+#include "controller.hpp"
+
+bot::bot(const std::string& token)
+    : _bot{token}
+    , _long_poll{_bot}
+    , _controller{std::make_unique<controller>()} {}
 
 void bot::init() {
-    TgBot::BotCommand::Ptr cmd;
-    std::vector<TgBot::BotCommand::Ptr> commands;
-    for (const auto &command : BOT_COMMANDS) {
-        cmd = std::make_shared<TgBot::BotCommand>();
-        cmd->command = command.first;
-        cmd->description = command.second;
-        commands.push_back(cmd);
-    }
-    _bot.getApi().setMyCommands(commands);
+    _commands.emplace_back("aggiungi", "Aggiungi un film. Utilizzo: /aggiungi <nome_film> [<url>]",
+                           [&](auto msg) { _controller->add_movie(msg); });
+    _commands.emplace_back("rimuovi", "Rimuovi un film. Utilizzo: /rimuovi <nome_film>", [&](auto msg) { _controller->delete_movie(msg); });
+    _commands.emplace_back("estrai", "Estrai un film da guardare", [&](auto msg) { _controller->extract_movie(msg); });
+    _commands.emplace_back("segna_visto", "Rimuovi il film estratto", [&](auto msg) { _controller->done_watch(msg); });
+    _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film", [&](auto msg) { _controller->my_movies(msg); });
+    _commands.emplace_back("lista", "Ottieni la lista di tutti i film", [&](auto msg) { _controller->all_movies(msg); });
 
-    _bot.getEvents().onAnyMessage([this](const TgBot::Message::Ptr &msg) {
-        parse_cmd(msg);
-    });
+    load_commands();
 }
 
 void bot::run() {
-
     try {
         std::cout << "Bot: " << _bot.getApi().getMe()->username << std::endl;
         while (true) {
             _long_poll.start();
         }
-    } catch (TgBot::TgException &e) {
+    } catch (TgBot::TgException& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-
 }
 
-void bot::parse_cmd(const TgBot::Message::Ptr &msg) {
-    printf("parse_cmd: %s from %s\n", msg->text.c_str(), msg->from->username.c_str());
-    auto cmd_dirty = msg->text;
-    std::string cmd;
-    if (!StringTools::startsWith(cmd_dirty, "/")) {
-        printf("%s is not a command\n", cmd_dirty.c_str());
-        return;
+void bot::load_commands() {
+    TgBot::BotCommand::Ptr cmd;
+    std::vector<TgBot::BotCommand::Ptr> commands;
+    for (const auto& command : _commands) {
+        cmd = std::make_shared<TgBot::BotCommand>();
+        cmd->command = command.cmd;
+        cmd->description = command.description;
+        commands.push_back(cmd);
     }
 
-    if (cmd_dirty.find('@') != std::string::npos) {
-        auto str_tokens = StringTools::split(cmd_dirty, '@');
-        cmd = str_tokens[0];
+    _bot.getApi().setMyCommands(commands);
+
+    for (const auto& _cmd : _commands) {
+        _bot.getEvents().onCommand(_cmd.cmd, _cmd.callback);
     }
-
-    printf("CMD: %s\n", cmd.c_str());
-    if ("/aggiungi" == cmd) {
-        //add_movie()
-    }
-}
-
-void bot::add_movie(std::string title, std::string resource_url) {
-    printf("add_movie\n");
-}
-
-void bot::delete_movie(std::string title) {
-    printf("delete_movie\n");
-}
-
-std::string bot::extract_movie() {
-    printf("extract_movie\n");
-    return std::string();
-}
-
-void bot::my_movies() {
-    printf("my_movies\n");
-}
-
-void bot::all_movies() {
-    printf("all_movies\n");
 }
 
 bot::~bot() = default;

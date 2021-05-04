@@ -5,6 +5,7 @@
  */
 
 #include <iostream>
+
 #include "bot.hpp"
 
 int main() {
