@@ -35,7 +35,7 @@ std::unordered_map<std::int32_t, std::vector<model::movie>> db_handler::get_grou
 
     return user_movies_map;
 }
-int db_handler::delete_user_movie(const int32_t& user_id, const int64_t& group_id, const int movie_id) {
+int db_handler::delete_user_movie(const int32_t& user_id, const int64_t& group_id, const int& movie_id) {
     using namespace model;
     using namespace sqlite_orm;
     auto db_movie =
@@ -48,4 +48,17 @@ int db_handler::delete_user_movie(const int32_t& user_id, const int64_t& group_i
     _storage.remove<movie>(user_movie.id);
 
     return 0;
+}
+
+std::vector<std::pair<std::int32_t, model::movie>> db_handler::extract_movie(const std::int64_t& group_id) {
+    // select tg_group_id, id, title, min(created_at) from movies where status == "idle" group by tg_user_id
+    using namespace model;
+    using namespace sqlite_orm;
+    auto movies =
+        _storage.select(columns(&movie::id, min(&movie::created_at)), where(c(&movie::group_id) == group_id), group_by(&movie::user_id));
+    for (const auto& t : movies) {
+        auto movie_id = std::get<0>(t);
+        std::cout << "MovieID: " << movie_id << std::endl;
+    }
+    return {};
 }

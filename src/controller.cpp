@@ -44,7 +44,7 @@ status controller::add_movie(const TgBot::Message::Ptr& msg) {
     }
 
     try {
-        _db_handler.save_movie(model::movie{-1, user_id, group_id, movie_title, movie_url, std::time(nullptr), false});
+        _db_handler.save_movie(model::movie{-1, user_id, group_id, movie_title, movie_url, std::time(nullptr), model::movie_status::idle});
     } catch (const std::system_error& e) {
         if (StringTools::startsWith(e.what(), "UNIQUE")) {
             return status::already_saved;
@@ -82,7 +82,16 @@ status controller::delete_movie(const TgBot::Message::Ptr& msg) {
     return status::ok;
 }
 
-std::string controller::extract_movie(const TgBot::Message::Ptr& msg) { return ("extract_movie\n"); }
+std::vector<std::pair<std::int32_t, model::movie>> controller::extract_movie(const TgBot::Message::Ptr& msg) {
+    if (msg->chat->type != TgBot::Chat::Type::Group) {
+        return {};
+    }
+
+    auto group_id = msg->chat->id;
+
+    _db_handler.extract_movie(group_id);
+    return {};
+}
 
 std::vector<model::movie> controller::my_movies(const TgBot::Message::Ptr& msg) {
     if (msg->chat->type != TgBot::Chat::Type::Group) {

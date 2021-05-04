@@ -20,7 +20,7 @@ auto make_storage_query() {
         "db_test.sqlite", make_unique_index("idx_movie", &movie::user_id, &movie::group_id, &movie::title),
         make_table("movies", make_column("id", &movie::id, primary_key(), autoincrement()), make_column("tg_user_id", &movie::user_id),
                    make_column("tg_group_id", &movie::group_id), make_column("title", &movie::title), make_column("url", &movie::url),
-                   make_column("created_at", &movie::created_at), make_column("watched", &movie::watched)));
+                   make_column("created_at", &movie::created_at), make_column("status", &movie::status)));
 }
 
 class db_handler {
@@ -33,7 +33,8 @@ public:
     void save_movie(const model::movie& movie);
     std::vector<model::movie> get_user_movies(const std::int32_t& user_id, const std::int64_t& group_id);
     std::unordered_map<std::int32_t, std::vector<model::movie>> get_group_movies(const std::int64_t& group_id);
-    int delete_user_movie(const std::int32_t& user_id, const std::int64_t& group_id, const int movie_id);
+    int delete_user_movie(const std::int32_t& user_id, const std::int64_t& group_id, const int& movie_id);
+    std::vector<std::pair<std::int32_t, model::movie>> extract_movie(const std::int64_t& group_id);
 
 private:
     decltype(make_storage_query()) _storage;

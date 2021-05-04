@@ -6,6 +6,8 @@
 #ifndef TURBAMOVIEBOT_MOVIE_HPP
 #define TURBAMOVIEBOT_MOVIE_HPP
 
+#include "model/movie_status.hpp"
+
 namespace model {
     struct movie {
         int id;
@@ -14,7 +16,7 @@ namespace model {
         std::string title;
         std::string url;
         time_t created_at;
-        bool watched;
+        movie_status status;
     };
 }  // namespace model
 #endif  // TURBAMOVIEBOT_MOVIE_HPP

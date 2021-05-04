@@ -24,7 +24,7 @@ public:
     virtual void init() = 0;
     virtual status add_movie(const TgBot::Message::Ptr& msg) = 0;
     virtual status delete_movie(const TgBot::Message::Ptr& msg) = 0;
-    virtual std::string extract_movie(const TgBot::Message::Ptr& msg) = 0;
+    virtual std::vector<std::pair<std::int32_t, model::movie>> extract_movie(const TgBot::Message::Ptr& msg) = 0;
     virtual std::vector<model::movie> my_movies(const TgBot::Message::Ptr& msg) = 0;
     virtual std::unordered_map<std::int32_t, std::vector<model::movie>> all_movies(const TgBot::Message::Ptr& msg) = 0;
     virtual status done_watch(const TgBot::Message::Ptr& msg) = 0;
