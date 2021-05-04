@@ -17,17 +17,13 @@
 class bot {
 public:
     explicit bot(const std::string& token);
-
     ~bot();
-
     void init();
-
     void run();
 
 private:
     void load_commands();
 
-private:
     TgBot::Bot _bot;
     TgBot::TgLongPoll _long_poll;
     std::vector<turba_bot::command> _commands;
