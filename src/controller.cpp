@@ -58,7 +58,24 @@ std::string controller::delete_movie(const TgBot::Message::Ptr& msg) { return ("
 
 std::string controller::extract_movie(const TgBot::Message::Ptr& msg) { return ("extract_movie\n"); }
 
-std::string controller::my_movies(const TgBot::Message::Ptr& msg) { return ("my_movies\n"); }
+std::string controller::my_movies(const TgBot::Message::Ptr& msg) {
+    if (msg->chat->type != TgBot::Chat::Type::Group) {
+        return std::string("Aggiungimi in un gruppo!");
+    }
+
+    auto user_id = msg->from->id;
+    auto group_id = msg->chat->id;
+
+    auto movies = _db_handler.get_user_movies(user_id, group_id);
+
+    auto response = std::string("I tuoi film:\n");
+
+    for (const auto& movie : movies) {
+        response.append(movie.title).append(" (").append(movie.url).append(")\n");
+    }
+
+    return response;
+}
 
 std::string controller::all_movies(const TgBot::Message::Ptr& msg) { return ("all_movies\n"); }
 

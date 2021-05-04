@@ -27,8 +27,10 @@ void bot::init() {
     _commands.emplace_back("segna_visto", "Rimuovi il film estratto",
                            [&](const TgBot::Message::Ptr& msg) { _controller->done_watch(msg); });
 
-    _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film",
-                           [&](const TgBot::Message::Ptr& msg) { _controller->my_movies(msg); });
+    _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film", [&](const TgBot::Message::Ptr& msg) {
+        auto res = _controller->my_movies(msg);
+        _bot.getApi().sendMessage(msg->chat->id, res, true, msg->messageId);
+    });
 
     _commands.emplace_back("lista", "Ottieni la lista di tutti i film",
                            [&](const TgBot::Message::Ptr& msg) { _controller->all_movies(msg); });
