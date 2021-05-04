@@ -8,15 +8,23 @@
 
 #include <tgbot/types/Message.h>
 
+#include "db_handler.hpp"
 #include "icontroller.hpp"
+
 class controller : public icontroller {
 public:
-    void add_movie(const TgBot::Message::Ptr& msg) override;
-    void delete_movie(const TgBot::Message::Ptr& msg) override;
+    controller();
+    ~controller();
+    void init() override;
+    std::string add_movie(const TgBot::Message::Ptr& msg) override;
+    std::string delete_movie(const TgBot::Message::Ptr& msg) override;
     std::string extract_movie(const TgBot::Message::Ptr& msg) override;
-    void my_movies(const TgBot::Message::Ptr& msg) override;
-    void all_movies(const TgBot::Message::Ptr& msg) override;
-    void done_watch(const TgBot::Message::Ptr& msg) override;
+    std::string my_movies(const TgBot::Message::Ptr& msg) override;
+    std::string all_movies(const TgBot::Message::Ptr& msg) override;
+    std::string done_watch(const TgBot::Message::Ptr& msg) override;
+
+private:
+    db_handler _db_handler;
 };
 
 #endif  // TURBAMOVIEBOT_CONTROLLER_HPP

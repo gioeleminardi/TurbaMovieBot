@@ -10,18 +10,14 @@
 #include "db_handler.hpp"
 
 int main() {
-//    std::string token = getenv("TOKEN");
-//    std::cout << "Token: " << token << std::endl;
-//
-//    bot turbaBot(token);
-//
-//    turbaBot.init();
-//
-//    turbaBot.run();
+    std::string token = getenv("TOKEN");
+    std::cout << "Token: " << token << std::endl;
 
-    db_handler dbHandler;
+    bot turbaBot(token);
 
-    dbHandler.init_schema();
+    turbaBot.init();
+
+    turbaBot.run();
 
     return 0;
 }

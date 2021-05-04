@@ -8,7 +8,6 @@
 
 class turba_entry {
 public:
-    int id;
     std::string user_name;
     std::string group_name;
     std::string movie_title;
