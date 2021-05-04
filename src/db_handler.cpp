@@ -22,3 +22,6 @@ std::vector<model::movie> db_handler::get_user_movies(const int32_t& user_id, co
     return _storage.get_all<model::movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id),
                                           order_by(&movie::created_at));
 }
+void db_handler::get_group_movies(const int64_t& group_id) {
+
+}

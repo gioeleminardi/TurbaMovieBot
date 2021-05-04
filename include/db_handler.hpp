@@ -30,6 +30,7 @@ public:
 
     void save_movie(const model::movie& movie);
     std::vector<model::movie> get_user_movies(const std::int32_t& user_id, const std::int64_t& group_id);
+    void get_group_movies(const std::int64_t& group_id);
 
 private:
     decltype(make_storage_query()) _storage;
