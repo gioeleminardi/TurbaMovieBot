@@ -22,6 +22,16 @@ std::vector<model::movie> db_handler::get_user_movies(const int32_t& user_id, co
     return _storage.get_all<model::movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id),
                                           order_by(&movie::created_at));
 }
-void db_handler::get_group_movies(const int64_t& group_id) {
+std::unordered_map<std::int32_t, std::vector<model::movie>> db_handler::get_group_movies(const int64_t& group_id) {
+    using namespace model;
+    using namespace sqlite_orm;
 
+    std::unordered_map<std::int32_t, std::vector<model::movie>> user_movies_map;
+
+    auto user_list = _storage.select(&movie::user_id, where(c(&movie::group_id) == group_id));
+    for (const auto& user_id : user_list) {
+        user_movies_map[user_id] = _storage.get_all<movie>(where(c(&movie::user_id) == user_id), order_by(&movie::created_at));
+    }
+
+    return user_movies_map;
 }

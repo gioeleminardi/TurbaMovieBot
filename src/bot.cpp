@@ -32,8 +32,28 @@ void bot::init() {
         _bot.getApi().sendMessage(msg->chat->id, res, true, msg->messageId);
     });
 
-    _commands.emplace_back("lista", "Ottieni la lista di tutti i film",
-                           [&](const TgBot::Message::Ptr& msg) { _controller->all_movies(msg); });
+    _commands.emplace_back("lista", "Ottieni la lista di tutti i film", [&](const TgBot::Message::Ptr& msg) {
+        auto res = _controller->all_movies(msg);
+        std::string response;
+
+        for (const auto& map_entry : res) {
+            auto user_id = map_entry.first;
+            auto user_movies = map_entry.second;
+            auto chat_member = _bot.getApi().getChatMember(msg->chat->id, user_id);
+            auto username = chat_member->user->username;
+            response.append(username + ": \n");
+            for (const auto& movie : user_movies) {
+                response.append(movie.title);
+                if (!movie.url.empty()) {
+                    response.append(" (" + movie.url + ")");
+                }
+                response.append("\n");
+            }
+            response.append("\n");
+        }
+
+        _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+    });
 
     load_commands();
 }

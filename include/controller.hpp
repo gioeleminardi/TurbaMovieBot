@@ -6,7 +6,7 @@
 #ifndef TURBAMOVIEBOT_CONTROLLER_HPP
 #define TURBAMOVIEBOT_CONTROLLER_HPP
 
-#include <tgbot/types/Message.h>
+#include <tgbot/tgbot.h>
 
 #include "db_handler.hpp"
 #include "icontroller.hpp"
@@ -20,7 +20,7 @@ public:
     std::string delete_movie(const TgBot::Message::Ptr& msg) override;
     std::string extract_movie(const TgBot::Message::Ptr& msg) override;
     std::string my_movies(const TgBot::Message::Ptr& msg) override;
-    std::string all_movies(const TgBot::Message::Ptr& msg) override;
+    std::unordered_map<std::int32_t, std::vector<model::movie>> all_movies(const TgBot::Message::Ptr& msg) override;
     std::string done_watch(const TgBot::Message::Ptr& msg) override;
 
 private:

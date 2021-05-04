@@ -23,7 +23,7 @@ std::string controller::add_movie(const TgBot::Message::Ptr& msg) {
     auto user_id = msg->from->id;
     auto group_id = msg->chat->id;
 
-    std::string movie_url = "N/A";
+    std::string movie_url;
 
     auto msg_tokens = StringTools::split(msg->text, ' ');
 
@@ -71,13 +71,25 @@ std::string controller::my_movies(const TgBot::Message::Ptr& msg) {
     auto response = std::string("I tuoi film:\n");
 
     for (const auto& movie : movies) {
-        response.append(movie.title).append(" (").append(movie.url).append(")\n");
+        response.append(movie.title);
+        if (!movie.url.empty()) {
+            response.append(" (" + movie.url + ")");
+        }
+        response.append("\n");
     }
 
     return response;
 }
 
-std::string controller::all_movies(const TgBot::Message::Ptr& msg) { return ("all_movies\n"); }
+std::unordered_map<std::int32_t, std::vector<model::movie>> controller::all_movies(const TgBot::Message::Ptr& msg) {
+    if (msg->chat->type != TgBot::Chat::Type::Group) {
+        return std::unordered_map<std::int32_t, std::vector<model::movie>>();
+    }
+
+    auto group_id = msg->chat->id;
+
+    return _db_handler.get_group_movies(group_id);
+}
 
 std::string controller::done_watch(const TgBot::Message::Ptr& msg) { return ("done_watch\n"); }
 
