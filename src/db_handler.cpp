@@ -4,11 +4,14 @@
  * \date       5/4/21
  */
 #include "db_handler.hpp"
-db_handler::db_handler() {}
 
-db_handler::~db_handler() {}
+#include <iostream>
 
-void db_handler::test() {
-    using namespace sqlite_orm;
-    auto storage = make_storage("db_test.sqlite", make_table("users", ))
-}
+db_handler::db_handler()
+    : _storage{make_storage_query()} {}
+
+db_handler::~db_handler() = default;
+
+void db_handler::init_schema() { _storage.sync_schema(); }
+
+void db_handler::save_entry(const turba_entry& entry) {}

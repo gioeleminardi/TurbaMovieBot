@@ -7,16 +7,21 @@
 #include <iostream>
 
 #include "bot.hpp"
+#include "db_handler.hpp"
 
 int main() {
-    std::string token = getenv("TOKEN");
-    std::cout << "Token: " << token << std::endl;
+//    std::string token = getenv("TOKEN");
+//    std::cout << "Token: " << token << std::endl;
+//
+//    bot turbaBot(token);
+//
+//    turbaBot.init();
+//
+//    turbaBot.run();
 
-    bot turbaBot(token);
+    db_handler dbHandler;
 
-    turbaBot.init();
-
-    turbaBot.run();
+    dbHandler.init_schema();
 
     return 0;
 }

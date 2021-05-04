@@ -11,8 +11,9 @@ public:
     int id;
     std::string title;
     std::string url;
-    int timestamp;
+    time_t timestamp;
     int user_id;
+    int group_id;
 };
 
 #endif  // TURBAMOVIEBOT_MOVIE_HPP
