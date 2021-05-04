@@ -14,12 +14,58 @@ bot::bot(const std::string& token)
 
 void bot::init() {
     _commands.emplace_back("aggiungi", "Aggiungi un film. Utilizzo: /aggiungi <nome_film> [<url>]", [&](const TgBot::Message::Ptr& msg) {
-        auto ret = _controller->add_movie(msg);
-        _bot.getApi().sendMessage(msg->chat->id, ret, true, msg->messageId);
+        auto status = _controller->add_movie(msg);
+        std::string response;
+        switch (status) {
+        case status::ok:
+            response = "Film aggiunto";
+            break;
+        case status::error:
+            response = "Errore sconosciuto";
+            break;
+        case status::not_found:
+            response = "Film non trovato";
+            break;
+        case status::not_a_group:
+            response = "Aggiungimi in un gruppo";
+            break;
+        case status::malformed_cmd:
+            response = "Utilizzo: /aggiungi <nome_film> [<url>]";
+            break;
+        case status::already_saved:
+            response = "Film esistente";
+            break;
+        }
+        _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
     });
 
-    _commands.emplace_back("rimuovi", "Rimuovi un film. Utilizzo: /rimuovi <nome_film>",
-                           [&](const TgBot::Message::Ptr& msg) { _controller->delete_movie(msg); });
+    _commands.emplace_back("rimuovi", "Rimuovi un film. Utilizzo: /rimuovi <id_film>", [&](const TgBot::Message::Ptr& msg) {
+        auto status = _controller->delete_movie(msg);
+        std::string response;
+        switch (status) {
+        case status::ok:
+            response = "Film eliminato";
+            break;
+        case status::error:
+            response = "Errore sconosciuto";
+            break;
+        case status::not_found:
+            response = "Film non trovato";
+            break;
+        case status::not_a_group:
+            response = "Aggiungimi in un gruppo";
+            break;
+        case status::malformed_cmd:
+            response = "Utilizzo: /rimuovi <id_film>";
+            break;
+        default:
+            response = "Errore critico";
+            break;
+        }
+
+        response.append("\n");
+        _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+    });
 
     _commands.emplace_back("estrai", "Estrai un film da guardare",
                            [&](const TgBot::Message::Ptr& msg) { _controller->extract_movie(msg); });
@@ -28,13 +74,37 @@ void bot::init() {
                            [&](const TgBot::Message::Ptr& msg) { _controller->done_watch(msg); });
 
     _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film", [&](const TgBot::Message::Ptr& msg) {
-        auto res = _controller->my_movies(msg);
-        _bot.getApi().sendMessage(msg->chat->id, res, true, msg->messageId);
+        auto my_movies = _controller->my_movies(msg);
+        std::string response = "I tuoi film:\n";
+        if (my_movies.empty()) {
+            response = "La tua lista è vuota";
+            _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+            return;
+        }
+
+        for (const auto& movie : my_movies) {
+            response.append(movie.title);
+
+            if (!movie.url.empty()) {
+                response.append(" (" + movie.url + ")");
+            }
+
+            response.append(" [" + std::to_string(movie.id) + "]");
+
+            response.append("\n");
+        }
+
+        _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
     });
 
     _commands.emplace_back("lista", "Ottieni la lista di tutti i film", [&](const TgBot::Message::Ptr& msg) {
         auto res = _controller->all_movies(msg);
         std::string response;
+        if (res.empty()) {
+            response = "Nessun film aggiunto";
+            _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+            return;
+        }
 
         for (const auto& map_entry : res) {
             auto user_id = map_entry.first;
@@ -47,6 +117,7 @@ void bot::init() {
                 if (!movie.url.empty()) {
                     response.append(" (" + movie.url + ")");
                 }
+                response.append(" [" + std::to_string(movie.id) + "]");
                 response.append("\n");
             }
             response.append("\n");

@@ -8,17 +8,26 @@
 #include <model/movie.hpp>
 #include <string>
 
+enum class status {
+    ok,
+    error,
+    already_saved,
+    not_found,
+    not_a_group,
+    malformed_cmd
+};
+
 class icontroller {
 public:
     using Ptr = std::unique_ptr<icontroller>;
 
     virtual void init() = 0;
-    virtual std::string add_movie(const TgBot::Message::Ptr& msg) = 0;
-    virtual std::string delete_movie(const TgBot::Message::Ptr& msg) = 0;
+    virtual status add_movie(const TgBot::Message::Ptr& msg) = 0;
+    virtual status delete_movie(const TgBot::Message::Ptr& msg) = 0;
     virtual std::string extract_movie(const TgBot::Message::Ptr& msg) = 0;
-    virtual std::string my_movies(const TgBot::Message::Ptr& msg) = 0;
+    virtual std::vector<model::movie> my_movies(const TgBot::Message::Ptr& msg) = 0;
     virtual std::unordered_map<std::int32_t, std::vector<model::movie>> all_movies(const TgBot::Message::Ptr& msg) = 0;
-    virtual std::string done_watch(const TgBot::Message::Ptr& msg) = 0;
+    virtual status done_watch(const TgBot::Message::Ptr& msg) = 0;
 };
 
 #endif  // TURBAMOVIEBOT_ICONTROLLER_HPP

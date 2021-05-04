@@ -33,6 +33,7 @@ public:
     void save_movie(const model::movie& movie);
     std::vector<model::movie> get_user_movies(const std::int32_t& user_id, const std::int64_t& group_id);
     std::unordered_map<std::int32_t, std::vector<model::movie>> get_group_movies(const std::int64_t& group_id);
+    int delete_user_movie(const std::int32_t& user_id, const std::int64_t& group_id, const int movie_id);
 
 private:
     decltype(make_storage_query()) _storage;

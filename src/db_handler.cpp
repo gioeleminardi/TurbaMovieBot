@@ -35,3 +35,17 @@ std::unordered_map<std::int32_t, std::vector<model::movie>> db_handler::get_grou
 
     return user_movies_map;
 }
+int db_handler::delete_user_movie(const int32_t& user_id, const int64_t& group_id, const int movie_id) {
+    using namespace model;
+    using namespace sqlite_orm;
+    auto db_movie =
+        _storage.get_all<movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id and c(&movie::id) == movie_id));
+    if (db_movie.empty()) {
+        return -1;
+    }
+
+    auto user_movie = db_movie[0];
+    _storage.remove<movie>(user_movie.id);
+
+    return 0;
+}

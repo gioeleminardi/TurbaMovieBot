@@ -16,12 +16,12 @@ public:
     controller();
     ~controller();
     void init() override;
-    std::string add_movie(const TgBot::Message::Ptr& msg) override;
-    std::string delete_movie(const TgBot::Message::Ptr& msg) override;
+    status add_movie(const TgBot::Message::Ptr& msg) override;
+    status delete_movie(const TgBot::Message::Ptr& msg) override;
     std::string extract_movie(const TgBot::Message::Ptr& msg) override;
-    std::string my_movies(const TgBot::Message::Ptr& msg) override;
+    std::vector<model::movie> my_movies(const TgBot::Message::Ptr& msg) override;
     std::unordered_map<std::int32_t, std::vector<model::movie>> all_movies(const TgBot::Message::Ptr& msg) override;
-    std::string done_watch(const TgBot::Message::Ptr& msg) override;
+    status done_watch(const TgBot::Message::Ptr& msg) override;
 
 private:
     db_handler _db_handler;
