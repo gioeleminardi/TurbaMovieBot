@@ -8,17 +8,17 @@
 
 #include <sqlite_orm/sqlite_orm.h>
 
-#include "model/turba_entry.hpp"
+#include "model/movie.hpp"
 
 template <typename... Args>
 auto make_storage_query() {
     using namespace sqlite_orm;
-    return make_storage(
-        "db_test.sqlite",
-        make_table("turba_entry", make_column("user_name", &turba_entry::user_name), make_column("group_name", &turba_entry::group_name),
-                   make_column("movie_title", &turba_entry::movie_title), make_column("movie_url", &turba_entry::movie_url),
-                   make_column("created_at", &turba_entry::created_at), make_column("watched", &turba_entry::watched),
-                   primary_key(&turba_entry::user_name, &turba_entry::group_name, &turba_entry::movie_title)));
+    using namespace model;
+    return make_storage("db_test.sqlite", make_unique_index("idx_movie", &movie::user_id, &movie::group_id, &movie::title),
+                        make_table("movies", make_column("id", &movie::id, primary_key(), autoincrement()),
+                                   make_column("tg_user_id", &movie::user_id), make_column("tg_group_id", &movie::group_id),
+                                   make_column("title", &movie::title), make_column("url", &movie::url),
+                                   make_column("created_at", &movie::created_at), make_column("watched", &movie::watched)));
 }
 
 class db_handler {
@@ -28,7 +28,7 @@ public:
 
     void init_schema();
 
-    void save_entry(const turba_entry& entry);
+    void save_movie(const model::movie& movie);
 
 private:
     decltype(make_storage_query()) _storage;

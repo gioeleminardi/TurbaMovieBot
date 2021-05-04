@@ -5,15 +5,16 @@
  */
 #ifndef TURBAMOVIEBOT_MOVIE_HPP
 #define TURBAMOVIEBOT_MOVIE_HPP
-#include <string>
-class movie {
-public:
-    int id;
-    std::string title;
-    std::string url;
-    time_t timestamp;
-    int user_id;
-    int group_id;
-};
 
+namespace model {
+    struct movie {
+        int id;
+        std::int32_t user_id;
+        std::int64_t group_id;
+        std::string title;
+        std::string url;
+        time_t created_at;
+        bool watched;
+    };
+}  // namespace model
 #endif  // TURBAMOVIEBOT_MOVIE_HPP

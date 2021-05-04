@@ -14,4 +14,4 @@ db_handler::~db_handler() = default;
 
 void db_handler::init_schema() { _storage.sync_schema(); }
 
-void db_handler::save_entry(const turba_entry& entry) { _storage.insert(entry); }
+void db_handler::save_movie(const model::movie& movie) { _storage.insert(movie); }

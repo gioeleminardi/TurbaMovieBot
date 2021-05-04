@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "model/turba_entry.hpp"
+#include "model/movie.hpp"
 
 controller::controller() = default;
 
@@ -17,34 +17,41 @@ controller::~controller() = default;
 
 std::string controller::add_movie(const TgBot::Message::Ptr& msg) {
     if (msg->chat->type != TgBot::Chat::Type::Group) {
-        return std::string("Not a group chat");
+        return std::string("Aggiungimi in un gruppo!");
     }
 
-    auto username = msg->from->username;
-    auto groupname = msg->chat->title;
+    auto user_id = msg->from->id;
+    auto group_id = msg->chat->id;
 
-    std::string movieurl = "N/A";
+    std::string movie_url = "N/A";
 
     auto msg_tokens = StringTools::split(msg->text, ' ');
 
     if (msg_tokens.size() < 2) {
-        return std::string("Not enough parameters");
+        return std::string("Utilizzo: /aggiungi <titolo film> [http(s)://<url>]");
     }
 
-    auto movietitle = msg_tokens[1];
+    auto movie_title = msg_tokens[1];
 
-    if (msg_tokens.size() == 3) {
-        movieurl = msg_tokens[2];
+    for (auto i = 2; i < msg_tokens.size(); ++i) {
+        auto token = msg_tokens[i];
+        if (!StringTools::startsWith(token, "http")) {
+            movie_title.append(" ").append(token);
+        } else {
+            movie_url = token;
+        }
     }
 
-    printf("add_movie [Username: %s, Groupname: %s, Movietitle: %s, Movieurl: %s]", username.c_str(), groupname.c_str(), movietitle.c_str(),
-           movieurl.c_str());
-
-    std::stringstream ss;
-    ss << "add_movie [Username: " << username << ", Groupname: " << groupname << ", Movietitle: " << movietitle
-       << ", Movieurl: " << movieurl << "]" << std::endl;
-
-    return ss.str();
+    try {
+        _db_handler.save_movie(model::movie{-1, user_id, group_id, movie_title, movie_url, std::time(nullptr), false});
+    } catch (const std::system_error& e) {
+        if (StringTools::startsWith(e.what(), "UNIQUE")) {
+            return std::string("Turba film già inserito");
+        } else {
+            return std::string("Errore: ").append(e.what());
+        }
+    }
+    return std::string("Aggiunto!");
 }
 
 std::string controller::delete_movie(const TgBot::Message::Ptr& msg) { return ("delete_movie\n"); }

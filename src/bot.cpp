@@ -13,15 +13,25 @@ bot::bot(const std::string& token)
     , _controller{std::make_unique<controller>()} {}
 
 void bot::init() {
-    _commands.emplace_back("aggiungi", "Aggiungi un film. Utilizzo: /aggiungi <nome_film> [<url>]", [&](auto msg) {
+    _commands.emplace_back("aggiungi", "Aggiungi un film. Utilizzo: /aggiungi <nome_film> [<url>]", [&](const TgBot::Message::Ptr& msg) {
         auto ret = _controller->add_movie(msg);
-        _bot.getApi().sendMessage(msg->chat->id, ret);
+        _bot.getApi().sendMessage(msg->chat->id, ret, true, msg->messageId);
     });
-    _commands.emplace_back("rimuovi", "Rimuovi un film. Utilizzo: /rimuovi <nome_film>", [&](auto msg) { _controller->delete_movie(msg); });
-    _commands.emplace_back("estrai", "Estrai un film da guardare", [&](auto msg) { _controller->extract_movie(msg); });
-    _commands.emplace_back("segna_visto", "Rimuovi il film estratto", [&](auto msg) { _controller->done_watch(msg); });
-    _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film", [&](auto msg) { _controller->my_movies(msg); });
-    _commands.emplace_back("lista", "Ottieni la lista di tutti i film", [&](auto msg) { _controller->all_movies(msg); });
+
+    _commands.emplace_back("rimuovi", "Rimuovi un film. Utilizzo: /rimuovi <nome_film>",
+                           [&](const TgBot::Message::Ptr& msg) { _controller->delete_movie(msg); });
+
+    _commands.emplace_back("estrai", "Estrai un film da guardare",
+                           [&](const TgBot::Message::Ptr& msg) { _controller->extract_movie(msg); });
+
+    _commands.emplace_back("segna_visto", "Rimuovi il film estratto",
+                           [&](const TgBot::Message::Ptr& msg) { _controller->done_watch(msg); });
+
+    _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film",
+                           [&](const TgBot::Message::Ptr& msg) { _controller->my_movies(msg); });
+
+    _commands.emplace_back("lista", "Ottieni la lista di tutti i film",
+                           [&](const TgBot::Message::Ptr& msg) { _controller->all_movies(msg); });
 
     load_commands();
 }
