@@ -5,7 +5,10 @@
  */
 #include "db_handler.hpp"
 
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
+#include <random>
 
 db_handler::db_handler()
     : _storage{make_storage_query()} {}
@@ -50,15 +53,53 @@ int db_handler::delete_user_movie(const int32_t& user_id, const int64_t& group_i
     return 0;
 }
 
-std::vector<std::pair<std::int32_t, model::movie>> db_handler::extract_movie(const std::int64_t& group_id) {
+std::vector<model::movie> db_handler::extract_movie(const std::int64_t& group_id) {
     // select tg_group_id, id, title, min(created_at) from movies where status == "idle" group by tg_user_id
     using namespace model;
     using namespace sqlite_orm;
-    auto movies =
-        _storage.select(columns(&movie::id, min(&movie::created_at)), where(c(&movie::group_id) == group_id), group_by(&movie::user_id));
-    for (const auto& t : movies) {
-        auto movie_id = std::get<0>(t);
-        std::cout << "MovieID: " << movie_id << std::endl;
+
+    auto group_extractions_count = _storage.count<extraction>(where(c(&extraction::group_id) == group_id));
+    if (group_extractions_count == 0) {
+        // new extraction
+        std::cout << "new extraction for group: " << group_id << std::endl;
+        auto selected_movies_t =
+            _storage.select(columns(&movie::id, min(&movie::created_at)),
+                            where(c(&movie::group_id) == group_id and c(&movie::status) == movie_status::idle), group_by(&movie::user_id));
+
+        std::vector<int> movies_id;
+        movies_id.reserve(selected_movies_t.size());
+
+        for (const auto& t : selected_movies_t) {
+            movies_id.push_back(std::get<0>(t));
+        }
+
+        std::shuffle(movies_id.begin(), movies_id.end(), std::mt19937(std::random_device()()));
+
+        for (const auto& movie_id : movies_id) {
+            _storage.insert(extraction{-1, group_id, movie_id});
+        }
+
+        _storage.update_all(set(c(&movie::status) = movie_status::extracted), where(in(&movie::id, movies_id)));
     }
-    return {};
+
+    //    select movies.id, movies.tg_user_id from movies, extractions
+    //    where movies.id == extractions.movie_id and extractions.tg_group_id == -582482617
+    //    order by extractions.id
+
+    // clang-format off
+    auto user_movies = _storage.select(
+        columns(&movie::id),
+        where(c(&movie::id) == &extraction::movie_id and c(&extraction::group_id) == group_id),
+        order_by(&extraction::id)
+        );
+    // clang-format on
+
+    std::vector<model::movie> movies;
+
+    for (const auto& tuple : user_movies) {
+        auto orderder_movie = _storage.get<movie>(std::get<0>(tuple));
+        movies.push_back(orderder_movie);
+    }
+
+    return movies;
 }

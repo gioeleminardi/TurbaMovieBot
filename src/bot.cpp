@@ -67,8 +67,27 @@ void bot::init() {
         _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
     });
 
-    _commands.emplace_back("estrai", "Estrai un film da guardare",
-                           [&](const TgBot::Message::Ptr& msg) { _controller->extract_movie(msg); });
+    _commands.emplace_back("estrai", "Estrai un film da guardare", [&](const TgBot::Message::Ptr& msg) {
+        auto result = _controller->extract_movie(msg);
+        std::string response = "Film estratti:\n";
+        if (result.empty()) {
+            response = "Non ci sono film in lista";
+            _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+            return;
+        }
+        for (const auto& movie : result) {
+            auto user_id = movie.user_id;
+            auto chat_member = _bot.getApi().getChatMember(msg->chat->id, user_id);
+            auto username = chat_member->user->username;
+            response.append(movie.title);
+            if (!movie.url.empty()) {
+                response.append(" (" + movie.url + ")");
+            }
+            response.append(" [" + username + "]");
+            response.append("\n");
+        }
+      _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+    });
 
     _commands.emplace_back("segna_visto", "Rimuovi il film estratto",
                            [&](const TgBot::Message::Ptr& msg) { _controller->done_watch(msg); });
@@ -84,13 +103,10 @@ void bot::init() {
 
         for (const auto& movie : my_movies) {
             response.append(movie.title);
-
             if (!movie.url.empty()) {
                 response.append(" (" + movie.url + ")");
             }
-
             response.append(" [" + std::to_string(movie.id) + "]");
-
             response.append("\n");
         }
 

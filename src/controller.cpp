@@ -82,15 +82,14 @@ status controller::delete_movie(const TgBot::Message::Ptr& msg) {
     return status::ok;
 }
 
-std::vector<std::pair<std::int32_t, model::movie>> controller::extract_movie(const TgBot::Message::Ptr& msg) {
+std::vector<model::movie> controller::extract_movie(const TgBot::Message::Ptr& msg) {
     if (msg->chat->type != TgBot::Chat::Type::Group) {
         return {};
     }
 
     auto group_id = msg->chat->id;
 
-    _db_handler.extract_movie(group_id);
-    return {};
+    return _db_handler.extract_movie(group_id);
 }
 
 std::vector<model::movie> controller::my_movies(const TgBot::Message::Ptr& msg) {
