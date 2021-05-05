@@ -113,6 +113,19 @@ std::unordered_map<std::int32_t, std::vector<model::movie>> controller::all_movi
     return _db_handler.get_group_movies(group_id);
 }
 
-status controller::done_watch(const TgBot::Message::Ptr& msg) { return status::error; }
+status controller::done_watch(const TgBot::Message::Ptr& msg) {
+    if (msg->chat->type != TgBot::Chat::Type::Group) {
+        return status::not_a_group;
+    }
+    auto user_id = msg->from->id;
+    auto group_id = msg->chat->id;
+
+    auto ret = _db_handler.done_watch(user_id, group_id);
+    if (ret != 0) {
+        return status::error;
+    }
+
+    return status::ok;
+}
 
 void controller::init() { _db_handler.init_schema(); }

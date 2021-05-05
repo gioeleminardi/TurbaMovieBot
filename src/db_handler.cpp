@@ -25,6 +25,7 @@ std::vector<model::movie> db_handler::get_user_movies(const int32_t& user_id, co
     return _storage.get_all<model::movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id),
                                           order_by(&movie::created_at));
 }
+
 std::unordered_map<std::int32_t, std::vector<model::movie>> db_handler::get_group_movies(const int64_t& group_id) {
     using namespace model;
     using namespace sqlite_orm;
@@ -38,11 +39,21 @@ std::unordered_map<std::int32_t, std::vector<model::movie>> db_handler::get_grou
 
     return user_movies_map;
 }
+
 int db_handler::delete_user_movie(const int32_t& user_id, const int64_t& group_id, const int& movie_id) {
     using namespace model;
     using namespace sqlite_orm;
-    auto db_movie =
-        _storage.get_all<movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id and c(&movie::id) == movie_id));
+
+    // clang-format off
+    auto db_movie = _storage.get_all<movie>(
+        where(
+            c(&movie::id) == movie_id and
+            c(&movie::user_id) == user_id and
+            c(&movie::group_id) == group_id and
+            c(&movie::status) != movie_status::extracted)
+    );
+    // clang-format on
+
     if (db_movie.empty()) {
         return -1;
     }
@@ -62,10 +73,17 @@ std::vector<model::movie> db_handler::extract_movie(const std::int64_t& group_id
     if (group_extractions_count == 0) {
         // new extraction
         std::cout << "new extraction for group: " << group_id << std::endl;
+        // clang-format off
         auto selected_movies_t =
-            _storage.select(columns(&movie::id, min(&movie::created_at)),
-                            where(c(&movie::group_id) == group_id and c(&movie::status) == movie_status::idle), group_by(&movie::user_id));
-
+            _storage.select(
+                            columns(&movie::id, min(&movie::created_at)),
+                            where(
+                                c(&movie::group_id) == group_id and
+                                c(&movie::status) == movie_status::idle
+                            ),
+                            group_by(&movie::user_id)
+            );
+        // clang-format on
         std::vector<int> movies_id;
         movies_id.reserve(selected_movies_t.size());
 
@@ -89,7 +107,10 @@ std::vector<model::movie> db_handler::extract_movie(const std::int64_t& group_id
     // clang-format off
     auto user_movies = _storage.select(
         columns(&movie::id),
-        where(c(&movie::id) == &extraction::movie_id and c(&extraction::group_id) == group_id),
+        where(
+            c(&movie::id) == &extraction::movie_id and
+            c(&extraction::group_id) == group_id
+        ),
         order_by(&extraction::id)
         );
     // clang-format on
@@ -102,4 +123,36 @@ std::vector<model::movie> db_handler::extract_movie(const std::int64_t& group_id
     }
 
     return movies;
+}
+
+int db_handler::done_watch(const int32_t& user_id, const int64_t& group_id) {
+    using namespace model;
+    using namespace sqlite_orm;
+
+    // clang-format off
+    auto result = _storage.select(
+        columns(&extraction::id, &movie::id),
+        where(
+            c(&movie::id) == &extraction::movie_id and
+            c(&extraction::group_id) == group_id and
+            c(&movie::user_id) == user_id
+        ),
+        order_by(&extraction::id)
+    );
+    // clang-format on
+
+    if (result.empty()) {
+        return -1;
+    }
+
+    auto extraction_id = std::get<0>(result[0]);
+    auto movie_id = std::get<1>(result[0]);
+
+    _storage.remove<extraction>(extraction_id);
+
+    auto _movie = _storage.get<movie>(movie_id);
+    _movie.status = model::movie_status::watched;
+    _storage.update(_movie);
+
+    return 0;
 }

@@ -86,11 +86,19 @@ void bot::init() {
             response.append(" [" + username + "]");
             response.append("\n");
         }
-      _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+        _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
     });
 
-    _commands.emplace_back("segna_visto", "Rimuovi il film estratto",
-                           [&](const TgBot::Message::Ptr& msg) { _controller->done_watch(msg); });
+    _commands.emplace_back("segna_visto", "Rimuovi il film estratto", [&](const TgBot::Message::Ptr& msg) {
+        auto status = _controller->done_watch(msg);
+        std::string response;
+        if (status == status::ok) {
+            response = "Segnato";
+        }
+        if (!response.empty()) {
+            _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+        }
+    });
 
     _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film", [&](const TgBot::Message::Ptr& msg) {
         auto my_movies = _controller->my_movies(msg);

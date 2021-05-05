@@ -50,6 +50,7 @@ public:
     std::unordered_map<std::int32_t, std::vector<model::movie>> get_group_movies(const std::int64_t& group_id);
     int delete_user_movie(const std::int32_t& user_id, const std::int64_t& group_id, const int& movie_id);
     std::vector<model::movie> extract_movie(const std::int64_t& group_id);
+    int done_watch(const std::int32_t& user_id, const std::int64_t& group_id);
 
 private:
     decltype(make_storage_query()) _storage;
