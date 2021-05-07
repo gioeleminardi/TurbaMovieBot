@@ -6,4 +6,4 @@ COPY . .
 WORKDIR /turbabot/build
 RUN cmake ..
 RUN make -j
-ENTRYPOINT bash
+ENTRYPOINT ["./TurbaMovieBot"]
