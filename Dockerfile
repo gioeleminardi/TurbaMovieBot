@@ -6,4 +6,6 @@ COPY . .
 WORKDIR /turbabot/build
 RUN cmake ..
 RUN make -j
+RUN mkdir data
+VOLUME ["/turbabot/build/data"]
 ENTRYPOINT ["./TurbaMovieBot"]

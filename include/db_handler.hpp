@@ -19,7 +19,7 @@ auto make_storage_query() {
     using namespace model;
     // clang-format off
     return make_storage(
-        "db_test.sqlite",
+        "data/turbadb.sqlite",
         make_unique_index("idx_movie", &movie::user_id, &movie::group_id, &movie::title),
         make_unique_index("idx_extraction", &extraction::group_id, &extraction::movie_id),
         make_table("movies",

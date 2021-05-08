@@ -34,7 +34,7 @@ std::unordered_map<std::int32_t, std::vector<model::movie>> db_handler::get_grou
 
     auto user_list = _storage.select(&movie::user_id, where(c(&movie::group_id) == group_id));
     for (const auto& user_id : user_list) {
-        user_movies_map[user_id] = _storage.get_all<movie>(where(c(&movie::user_id) == user_id), order_by(&movie::created_at));
+        user_movies_map[user_id] = _storage.get_all<movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id), order_by(&movie::created_at));
     }
 
     return user_movies_map;
