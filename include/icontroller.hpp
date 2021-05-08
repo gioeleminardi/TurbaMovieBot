@@ -28,6 +28,7 @@ public:
     virtual std::vector<model::movie> my_movies(const TgBot::Message::Ptr& msg) = 0;
     virtual std::unordered_map<std::int32_t, std::vector<model::movie>> all_movies(const TgBot::Message::Ptr& msg) = 0;
     virtual status done_watch(const TgBot::Message::Ptr& msg) = 0;
+    virtual status swap_movies(const TgBot::Message::Ptr& msg) = 0;
 };
 
 #endif  // TURBAMOVIEBOT_ICONTROLLER_HPP

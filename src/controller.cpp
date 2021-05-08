@@ -129,3 +129,35 @@ status controller::done_watch(const TgBot::Message::Ptr& msg) {
 }
 
 void controller::init() { _db_handler.init_schema(); }
+
+status controller::swap_movies(const TgBot::Message::Ptr& msg) {
+    if (msg->chat->type != TgBot::Chat::Type::Group) {
+        return status::not_a_group;
+    }
+
+    auto tokens = StringTools::split(msg->text, ' ');
+    if (tokens.size() != 3) {
+        return status::malformed_cmd;
+    }
+
+    auto user_id = msg->from->id;
+    auto group_id = msg->chat->id;
+
+    int movie_id1;
+    int movie_id2;
+
+    try {
+        movie_id1 = std::stoi(tokens[1]);
+        movie_id2 = std::stoi(tokens[2]);
+    } catch (std::invalid_argument& e) {
+        return status::malformed_cmd;
+    }
+
+    auto ret = _db_handler.swap_movies(user_id, group_id, movie_id1, movie_id2);
+
+    if (ret != 0) {
+        return status::error;
+    }
+
+    return status::ok;
+}

@@ -150,6 +150,33 @@ void bot::init() {
         _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
     });
 
+    _commands.emplace_back("swap", "Inverti due film. Utilizzo: /swap <film_id1> <film_id2>", [&](const TgBot::Message::Ptr& msg) {
+      auto res = _controller->swap_movies(msg);
+      std::string response;
+      switch (res) {
+      case status::ok:
+          response = "Film scambiati";
+          break;
+      case status::error:
+          response = "Errore sconosciuto";
+          break;
+      case status::not_found:
+          response = "Film non trovato";
+          break;
+      case status::not_a_group:
+          response = "Aggiungimi in un gruppo";
+          break;
+      case status::malformed_cmd:
+          response = "Utilizzo: /swap <film_id1> <film_id2>";
+          break;
+      default:
+          response = "Errore critico";
+          break;
+      }
+
+      response.append("\n");
+      _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+    });
     load_commands();
 }
 

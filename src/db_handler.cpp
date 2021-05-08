@@ -34,7 +34,8 @@ std::unordered_map<std::int32_t, std::vector<model::movie>> db_handler::get_grou
 
     auto user_list = _storage.select(&movie::user_id, where(c(&movie::group_id) == group_id));
     for (const auto& user_id : user_list) {
-        user_movies_map[user_id] = _storage.get_all<movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id), order_by(&movie::created_at));
+        user_movies_map[user_id] =
+            _storage.get_all<movie>(where(c(&movie::user_id) == user_id and c(&movie::group_id) == group_id), order_by(&movie::created_at));
     }
 
     return user_movies_map;
@@ -153,6 +154,34 @@ int db_handler::done_watch(const int32_t& user_id, const int64_t& group_id) {
     auto _movie = _storage.get<movie>(movie_id);
     _movie.status = model::movie_status::watched;
     _storage.update(_movie);
+
+    return 0;
+}
+int db_handler::swap_movies(const int32_t& user_id, const int64_t& group_id, const int& movie_id1, const int& movie_id2) {
+    using namespace model;
+    using namespace sqlite_orm;
+
+    // clang-format off
+    auto movies_to_swap = _storage.get_all<movie>(
+        where(
+                c(&movie::group_id) == group_id and
+                c(&movie::user_id) == user_id and
+                c(&movie::status) == movie_status::idle and
+                in(&movie::id, {movie_id1, movie_id2})
+            )
+        );
+    // clang-format on
+
+    if (movies_to_swap.size() != 2) {
+        return -1;
+    }
+
+    auto temp_created_at = movies_to_swap[0].created_at;
+    movies_to_swap[0].created_at = movies_to_swap[1].created_at;
+    movies_to_swap[1].created_at = temp_created_at;
+
+    _storage.update(movies_to_swap[0]);
+    _storage.update(movies_to_swap[1]);
 
     return 0;
 }
