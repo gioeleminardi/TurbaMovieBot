@@ -22,6 +22,7 @@ public:
     std::vector<model::movie> my_movies(const TgBot::Message::Ptr& msg) override;
     std::unordered_map<std::int32_t, std::vector<model::movie>> all_movies(const TgBot::Message::Ptr& msg) override;
     status done_watch(const TgBot::Message::Ptr& msg) override;
+    status swap_movies(const TgBot::Message::Ptr& msg) override;
 
 private:
     db_handler _db_handler;
