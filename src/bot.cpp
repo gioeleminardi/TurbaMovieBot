@@ -132,9 +132,12 @@ void bot::init() {
 
     _commands.emplace_back("lista", "Ottieni la lista di tutti i film", [&](const TgBot::Message::Ptr& msg) {
         auto res = _controller->all_movies(msg);
-        std::string response;
+
+        std::string response = emoji_map[emoji::movie_camera] + " Turba Lista " + emoji_map[emoji::movie_camera] + "\n\n";
+        std::string movie_emoji = "";
+
         if (res.empty()) {
-            response = "Nessun film aggiunto";
+            response.append("Vuota!");
             _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
             return;
         }
@@ -144,9 +147,20 @@ void bot::init() {
             auto user_movies = map_entry.second;
             auto chat_member = _bot.getApi().getChatMember(msg->chat->id, user_id);
             auto username = chat_member->user->username;
-            response.append(username + ": \n");
+            response.append("@" + username + ": \n");
             for (const auto& movie : user_movies) {
-                response.append(movie.title);
+                switch (movie.status) {
+                case model::movie_status::watched:
+                    movie_emoji = emoji_map[emoji::heavy_check_mark];
+                    break;
+                case model::movie_status::extracted:
+                    movie_emoji = emoji_map[emoji::eye];
+                    break;
+                default:
+                    movie_emoji = "";
+                    break;
+                }
+                response.append(movie_emoji).append(" ").append(movie.title);
                 if (!movie.url.empty()) {
                     response.append(" (" + movie.url + ")");
                 }
