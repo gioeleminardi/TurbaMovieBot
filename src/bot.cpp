@@ -6,6 +6,8 @@
 #include "bot.hpp"
 
 #include "controller.hpp"
+#include "emojis.hpp"
+#include "utils.hpp"
 
 bot::bot(const std::string& token)
     : _bot{token}
@@ -69,24 +71,30 @@ void bot::init() {
 
     _commands.emplace_back("estrai", "Estrai un film da guardare", [&](const TgBot::Message::Ptr& msg) {
         auto result = _controller->extract_movie(msg);
-        std::string response = "Film estratti:\n";
+
+        std::string response = emoji_map[emoji::movie_camera] + " Turba Estrazione " + emoji_map[emoji::movie_camera] + "\n\n";
+
+        std::string user_movie_response_template = "~~~~~~~~~~\nTurbato: @%s\nFilm: %s\nUrl: %s\n";
+
         if (result.empty()) {
             response = "Non ci sono film in lista";
             _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
             return;
         }
+
         for (const auto& movie : result) {
+            std::string url = "N/A";
             auto user_id = movie.user_id;
             auto chat_member = _bot.getApi().getChatMember(msg->chat->id, user_id);
             auto username = chat_member->user->username;
-            response.append(movie.title);
             if (!movie.url.empty()) {
-                response.append(" (" + movie.url + ")");
+                url = movie.url;
             }
-            response.append(" [" + username + "]");
-            response.append("\n");
+
+            response.append(string_format(user_movie_response_template, username.c_str(), movie.title.c_str(), url.c_str()));
         }
-        auto local_msg = _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+
+        auto local_msg = _bot.getApi().sendMessage(msg->chat->id, response, true);
         _bot.getApi().pinChatMessage(msg->chat->id, local_msg->messageId);
     });
 
@@ -183,13 +191,17 @@ void bot::init() {
 
 void bot::run() {
     _controller->init();
-    try {
-        std::cout << "Bot: " << _bot.getApi().getMe()->username << std::endl;
-        while (true) {
+    bool getMe = false;
+    while (true) {
+        try {
+            if (!getMe) {
+                std::cout << "Bot: " << _bot.getApi().getMe()->username << std::endl;
+                getMe = true;
+            }
             _long_poll.start();
+        } catch (TgBot::TgException& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
         }
-    } catch (TgBot::TgException& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
