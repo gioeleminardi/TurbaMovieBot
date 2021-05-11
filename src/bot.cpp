@@ -74,7 +74,7 @@ void bot::init() {
 
         std::string response = emoji_map[emoji::movie_camera] + " Turba Estrazione " + emoji_map[emoji::movie_camera] + "\n\n";
 
-        std::string user_movie_response_template = "~~~~~~~~~~\nTurbato: @%s\nFilm: %s\nUrl: %s\n";
+        std::string user_movie_response_template = "~~~~~~~~~~\nTurbato: %s\nFilm: %s\nUrl: %s\n";
 
         if (result.empty()) {
             response = "Non ci sono film in lista";
@@ -160,7 +160,7 @@ void bot::init() {
             auto user_movies = map_entry.second;
             auto chat_member = _bot.getApi().getChatMember(msg->chat->id, user_id);
             auto username = chat_member->user->username;
-            response.append("@" + username + ": \n");
+            response.append("<strong>" + username + "</strong>: \n");
             for (const auto& movie : user_movies) {
                 switch (movie.status) {
                 case model::movie_status::watched:
@@ -183,7 +183,7 @@ void bot::init() {
             response.append("\n");
         }
 
-        _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
+        _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId, nullptr, "HTML");
     });
 
     _commands.emplace_back("swap", "Inverti due film. Utilizzo: /swap <film_id1> <film_id2>", [&](const TgBot::Message::Ptr& msg) {
