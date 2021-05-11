@@ -111,15 +111,28 @@ void bot::init() {
 
     _commands.emplace_back("mia_lista", "Ottieni la lista dei tuoi film", [&](const TgBot::Message::Ptr& msg) {
         auto my_movies = _controller->my_movies(msg);
-        std::string response = "I tuoi film:\n";
+        std::string response = emoji_map[emoji::movie_camera] + " I tuoi film " + emoji_map[emoji::movie_camera] + "\n\n";
+        std::string movie_emoji;
+
         if (my_movies.empty()) {
-            response = "La tua lista è vuota";
+            response.append("La tua lista è vuota");
             _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
             return;
         }
 
         for (const auto& movie : my_movies) {
-            response.append(movie.title);
+            switch (movie.status) {
+            case model::movie_status::watched:
+                movie_emoji = emoji_map[emoji::heavy_check_mark];
+                break;
+            case model::movie_status::extracted:
+                movie_emoji = emoji_map[emoji::eye];
+                break;
+            default:
+                movie_emoji = "";
+                break;
+            }
+            response.append(movie_emoji).append(" ").append(movie.title);
             if (!movie.url.empty()) {
                 response.append(" (" + movie.url + ")");
             }
@@ -134,7 +147,7 @@ void bot::init() {
         auto res = _controller->all_movies(msg);
 
         std::string response = emoji_map[emoji::movie_camera] + " Turba Lista " + emoji_map[emoji::movie_camera] + "\n\n";
-        std::string movie_emoji = "";
+        std::string movie_emoji;
 
         if (res.empty()) {
             response.append("Vuota!");
@@ -200,6 +213,7 @@ void bot::init() {
         response.append("\n");
         _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
     });
+
     load_commands();
 }
 

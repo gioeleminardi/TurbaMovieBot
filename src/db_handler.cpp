@@ -142,6 +142,21 @@ int db_handler::done_watch(const int32_t& user_id, const int64_t& group_id) {
     );
     // clang-format on
 
+#ifndef NDEBUG
+    if (user_id == 112352414) {
+        // clang-format off
+        result = _storage.select(
+            columns(&extraction::id, &movie::id),
+            where(
+                c(&movie::id) == &extraction::movie_id and
+                c(&extraction::group_id) == group_id
+            ),
+            order_by(&extraction::id)
+        );
+        // clang-format on
+    }
+#endif
+
     if (result.empty()) {
         return -1;
     }
