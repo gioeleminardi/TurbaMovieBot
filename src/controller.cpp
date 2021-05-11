@@ -121,8 +121,10 @@ status controller::done_watch(const TgBot::Message::Ptr& msg) {
     auto group_id = msg->chat->id;
 
     auto ret = _db_handler.done_watch(user_id, group_id);
-    if (ret != 0) {
+    if (ret == -1) {
         return status::error;
+    } else if (ret == -2) {
+        return status::not_allowed;
     }
 
     return status::ok;

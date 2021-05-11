@@ -101,9 +101,15 @@ void bot::init() {
     _commands.emplace_back("segna_visto", "Rimuovi il film estratto", [&](const TgBot::Message::Ptr& msg) {
         auto status = _controller->done_watch(msg);
         std::string response;
+
         if (status == status::ok) {
             response = "Segnato";
+        } else if (status == status::not_allowed) {
+            response = "Il film non è stato aggiunto da te! Marrano!";
+        } else {
+            response = "Errore";
         }
+
         if (!response.empty()) {
             _bot.getApi().sendMessage(msg->chat->id, response, true, msg->messageId);
         }

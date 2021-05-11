@@ -14,7 +14,8 @@ enum class status {
     already_saved,
     not_found,
     not_a_group,
-    malformed_cmd
+    malformed_cmd,
+    not_allowed
 };
 
 class icontroller {

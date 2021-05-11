@@ -151,7 +151,7 @@ int db_handler::done_watch(const int32_t& user_id, const int64_t& group_id) {
     auto _movie = _storage.get<movie>(movie_id);
 
     if(_movie.user_id != user_id){
-        return -1;
+        return -2;
     }
 
     _storage.remove<extraction>(extraction_id);
