@@ -4,7 +4,7 @@ RUN apk add --no-cache curl-dev openssl-dev sqlite-dev zlib-dev build-base cmake
 WORKDIR /turbabot
 COPY . .
 WORKDIR /turbabot/build
-RUN cmake ..
+RUN cmake -DCMAKE_BUILD_TYPE=Release ..
 RUN make -j
 RUN mkdir data
 VOLUME ["/turbabot/build/data"]
