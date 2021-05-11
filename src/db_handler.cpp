@@ -135,25 +135,11 @@ int db_handler::done_watch(const int32_t& user_id, const int64_t& group_id) {
         columns(&extraction::id, &movie::id),
         where(
             c(&movie::id) == &extraction::movie_id and
-            c(&extraction::group_id) == group_id and
-            c(&movie::user_id) == user_id
+            c(&extraction::group_id) == group_id
         ),
         order_by(&extraction::id)
     );
     // clang-format on
-
-//    if (user_id == 112352414) {
-//        // clang-format off
-//        result = _storage.select(
-//            columns(&extraction::id, &movie::id),
-//            where(
-//                c(&movie::id) == &extraction::movie_id and
-//                c(&extraction::group_id) == group_id
-//            ),
-//            order_by(&extraction::id)
-//        );
-//        // clang-format on
-//    }
 
     if (result.empty()) {
         return -1;
@@ -162,9 +148,14 @@ int db_handler::done_watch(const int32_t& user_id, const int64_t& group_id) {
     auto extraction_id = std::get<0>(result[0]);
     auto movie_id = std::get<1>(result[0]);
 
+    auto _movie = _storage.get<movie>(movie_id);
+
+    if(_movie.user_id != user_id){
+        return -1;
+    }
+
     _storage.remove<extraction>(extraction_id);
 
-    auto _movie = _storage.get<movie>(movie_id);
     _movie.status = model::movie_status::watched;
     _storage.update(_movie);
 
