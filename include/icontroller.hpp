@@ -8,15 +8,7 @@
 #include <model/movie.hpp>
 #include <string>
 
-enum class status {
-    ok,
-    error,
-    already_saved,
-    not_found,
-    not_a_group,
-    malformed_cmd,
-    not_allowed
-};
+enum class status { ok, error, already_saved, not_found, not_a_group, malformed_cmd, not_allowed };
 
 class icontroller {
 public:

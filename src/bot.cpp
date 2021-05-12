@@ -234,7 +234,9 @@ void bot::run() {
             }
             _long_poll.start();
         } catch (TgBot::TgException& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
+            std::cerr << "TgBot Error: " << e.what() << std::endl;
+        } catch (boost::wrapexcept<boost::system::system_error>& e) {
+            std::cerr << "Boost Exception: " << e.what() << std::endl;
         }
     }
 }
