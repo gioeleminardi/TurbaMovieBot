@@ -8,8 +8,10 @@
 #include <tgbot/tools/StringTools.h>
 
 #include <iostream>
+#include <regex>
 
 #include "model/movie.hpp"
+#include "utils.hpp"
 
 controller::controller() = default;
 
@@ -23,25 +25,32 @@ status controller::add_movie(const TgBot::Message::Ptr& msg) {
     auto user_id = msg->from->id;
     auto group_id = msg->chat->id;
 
-    std::string movie_url;
+    auto msg_str = msg->text;
 
-    auto msg_tokens = StringTools::split(msg->text, ' ');
+    std::regex newlines_re("\n+");
+    msg_str = std::regex_replace(msg_str, newlines_re, " ");
+
+    auto msg_tokens = StringTools::split(msg_str, ' ');
 
     if (msg_tokens.size() < 2) {
-        //        return std::string("Utilizzo: /aggiungi <titolo film> [http(s)://<url>]");
         return status::malformed_cmd;
     }
 
-    auto movie_title = msg_tokens[1];
+    std::string movie_title;
+    std::string movie_url;
 
-    for (auto i = 2; i < msg_tokens.size(); ++i) {
-        auto token = msg_tokens[i];
-        if (!StringTools::startsWith(token, "http")) {
-            movie_title.append(" ").append(token);
-        } else {
+    for (const auto& token : msg_tokens) {
+        if (token.empty() || StringTools::startsWith(token, "/"))
+            continue;
+
+        if (StringTools::startsWith(token, "http")) {
             movie_url = token;
+        } else {
+            movie_title.append(token).append(" ");
         }
     }
+
+    rtrim(movie_title);
 
     try {
         _db_handler.save_movie(model::movie{-1, user_id, group_id, movie_title, movie_url, std::time(nullptr), model::movie_status::idle});
