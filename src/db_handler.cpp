@@ -172,7 +172,7 @@ int db_handler::swap_movies(const int32_t& user_id, const int64_t& group_id, con
         where(
                 c(&movie::group_id) == group_id and
                 c(&movie::user_id) == user_id and
-                c(&movie::status) == movie_status::idle and
+                c(&movie::status) != movie_status::watched and
                 in(&movie::id, {movie_id1, movie_id2})
             )
         );
@@ -182,7 +182,29 @@ int db_handler::swap_movies(const int32_t& user_id, const int64_t& group_id, con
         return -1;
     }
 
+    auto it = std::find_if(movies_to_swap.begin(), movies_to_swap.end(),
+                           [](const model::movie& mov) { return mov.status == movie_status::extracted; });
+
+    if (it != movies_to_swap.end()) {
+        // One film is extracted
+        auto extraction =
+            _storage.get_all<model::extraction>(where(c(&extraction::movie_id) == it->id and c(&extraction::group_id) == group_id));
+        if (!extraction.empty()) {
+            it->status = model::movie_status::idle;
+            if (extraction[0].movie_id == movies_to_swap[0].id) {
+                extraction[0].movie_id = movies_to_swap[1].id;
+                movies_to_swap[1].status = model::movie_status::extracted;
+            } else {
+                extraction[0].movie_id = movies_to_swap[0].id;
+                movies_to_swap[0].status = model::movie_status::extracted;
+            }
+            _storage.update(extraction[0]);
+            _storage.update(*it);
+        }
+    }
+
     auto temp_created_at = movies_to_swap[0].created_at;
+
     movies_to_swap[0].created_at = movies_to_swap[1].created_at;
     movies_to_swap[1].created_at = temp_created_at;
 
